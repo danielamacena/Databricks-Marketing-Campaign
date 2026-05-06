@@ -1,20 +1,26 @@
-Marketing Campaign Lakehouse Pipeline
-Overview
+# Marketing Campaign Lakehouse Pipeline
 
-This project demonstrates an end-to-end Lakehouse pipeline built in Databricks using a Bronze → Silver → Gold architecture.
+## Overview
+
+This project demonstrates an end-to-end Lakehouse pipeline built in Databricks using a **Bronze → Silver → Gold** architecture.
 
 The pipeline processes marketing campaign CSV data, applies data quality validation, performs transformations, calculates business KPIs, and orchestrates the workflow using Databricks Jobs.
 
 The goal of this project was to practice modern data engineering concepts such as:
 
-Delta Lake
-Incremental loading
-Data quality validation
-Lakehouse architecture
-Pipeline orchestration
-PySpark transformations
-Bronze / Silver / Gold layering
-Architecture
+- Delta Lake
+- Incremental Loading
+- Data Quality Validation
+- Lakehouse Architecture
+- Pipeline Orchestration
+- PySpark Transformations
+- Bronze / Silver / Gold Layering
+
+---
+
+# Architecture
+
+```text
 CSV Source Data
         ↓
 Bronze Layer (Raw Delta Tables)
@@ -28,59 +34,83 @@ Silver Layer (Cleaned / Validated Data)
 Gold Layer (Business Metrics & KPIs)
         ↓
 Reporting / Analytics
-Technologies Used
-Python
-PySpark
-Databricks
-Delta Lake
-Databricks Jobs & Workflows
-SQL
-Lakehouse Architecture
-Dataset
+```
+
+---
+
+# Technologies Used
+
+- Python
+- PySpark
+- Databricks
+- Delta Lake
+- SQL
+- Databricks Jobs & Workflows
+- Lakehouse Architecture
+
+---
+
+# Dataset
 
 The dataset simulates marketing campaign performance data.
 
-Example columns:
+## Example Columns
 
-Column	Description
-date	Campaign date
-campaign_id	Campaign identifier
-campaign_name	Campaign name
-channel	Marketing channel
-region	Region
-impressions	Ad impressions
-clicks	Ad clicks
-conversions	Conversions
-cost	Campaign cost
-revenue	Revenue generated
-last_updated	Incremental load timestamp
-Project Structure
+| Column | Description |
+|---|---|
+| date | Campaign date |
+| campaign_id | Campaign identifier |
+| campaign_name | Campaign name |
+| channel | Marketing channel |
+| region | Region |
+| impressions | Ad impressions |
+| clicks | Ad clicks |
+| conversions | Conversions |
+| cost | Campaign cost |
+| revenue | Revenue generated |
+| last_updated | Incremental load timestamp |
+
+---
+
+# Project Structure
+
+```text
 01_bronze_ingestion
 02_silver_transform
 03_gold_campaign_performance
 04_data_quality_checks
-Bronze Layer
+```
+
+---
+
+# Bronze Layer
 
 The Bronze layer stores raw ingested data as Delta tables.
 
-Features:
+## Features
 
-CSV ingestion
-Delta table creation
-Incremental MERGE logic
-Raw data preservation
+- CSV ingestion
+- Delta table creation
+- Incremental MERGE logic
+- Raw data preservation
 
-Example:
+## Example
 
+```python
 df.write.format("delta") \
     .mode("overwrite") \
     .saveAsTable("bronze_marketing_campaigns")
-Incremental Loading
+```
+
+---
+
+# Incremental Loading
 
 Incremental logic was implemented using Delta MERGE operations.
 
-Example:
+## Example
 
+```sql
 MERGE INTO bronze_marketing_campaigns AS target
 USING incremental_campaign_updates AS source
 ON target.campaign_id = source.campaign_id
@@ -92,64 +122,85 @@ UPDATE SET *
 
 WHEN NOT MATCHED THEN
 INSERT *
+```
 
-This prevents full reloads and updates only changed/new records.
+This prevents full reloads and updates only changed or new records.
 
-Data Quality Checks
+---
+
+# Data Quality Checks
 
 A dedicated data quality notebook validates Bronze data before downstream processing.
 
-Checks include:
+## Validation Rules
 
-NULL validation
-Negative metric validation
-Invalid business records
+- NULL validation
+- Negative metric validation
+- Invalid business records
 
-Invalid records are persisted into an audit/error table:
+Invalid records are persisted into an audit table:
 
+```text
 bronze_data_quality_errors
+```
 
-Example checks:
+## Example Validation
 
+```python
 .filter(col("campaign_id").isNotNull())
 .filter(col("impressions") > 0)
 .filter(col("cost") > 0)
-Silver Layer
+```
+
+---
+
+# Silver Layer
 
 The Silver layer stores cleaned and validated data.
 
-Responsibilities:
+## Responsibilities
 
-Remove invalid records
-Apply business validation rules
-Create trusted analytical datasets
+- Remove invalid records
+- Apply business validation rules
+- Create trusted analytical datasets
 
-Example:
+## Example
 
+```python
 df_silver = df_bronze \
     .filter(col("campaign_id").isNotNull()) \
     .filter(col("impressions") > 0)
-Gold Layer
+```
+
+---
+
+# Gold Layer
 
 The Gold layer enriches the Silver dataset with calculated business KPIs.
 
-Calculated metrics:
+## Calculated Metrics
 
-CTR
-Conversion Rate
-ROI
+- CTR
+- Conversion Rate
+- ROI
 
-Example:
+## Example
 
+```python
 .withColumn("ctr", round(col("clicks") / col("impressions"), 4))
 .withColumn("conversion_rate", round(col("conversions") / col("clicks"), 4))
 .withColumn("roi", round((col("revenue") - col("cost")) / col("cost"), 4))
-Pipeline Orchestration
+```
+
+---
+
+# Pipeline Orchestration
 
 The pipeline is orchestrated using Databricks Jobs & Workflows.
 
-Workflow:
+## Workflow
 
+```text
 bronze_ingestion
       ↓
 data_quality_checks
@@ -157,38 +208,48 @@ data_quality_checks
 silver_transform
       ↓
 gold_aggregation
+```
 
 This simulates a production-style orchestrated Lakehouse pipeline.
 
-Key Concepts Practiced
-Lakehouse architecture
-Delta tables
-ACID transactions
-Incremental processing
-Data quality monitoring
-Pipeline orchestration
-PySpark transformations
-Business KPI calculations
-Error auditing
-Future Improvements
+---
+
+# Key Concepts Practiced
+
+- Lakehouse Architecture
+- Delta Tables
+- ACID Transactions
+- Incremental Processing
+- Data Quality Monitoring
+- Pipeline Orchestration
+- PySpark Transformations
+- Business KPI Calculations
+- Error Auditing
+
+---
+
+# Future Improvements
 
 Potential future enhancements:
 
-Partitioning strategy
-Slowly Changing Dimensions (SCD)
-Streaming ingestion
-Unity Catalog integration
-Automated alerting
-CI/CD deployment
-Power BI integration
-Great Expectations / advanced data quality frameworks
-Learning Outcomes
+- Partitioning strategy
+- Slowly Changing Dimensions (SCD)
+- Streaming ingestion
+- Unity Catalog integration
+- Automated alerting
+- CI/CD deployment
+- Power BI integration
+- Great Expectations / advanced data quality frameworks
+
+---
+
+# Learning Outcomes
 
 This project helped reinforce practical experience with:
 
-Databricks notebooks
-Delta Lake
-PySpark
-Data pipeline orchestration
-Lakehouse design patterns
-Data validation workflows
+- Databricks notebooks
+- Delta Lake
+- PySpark
+- Data pipeline orchestration
+- Lakehouse design patterns
+- Data validation workflows
